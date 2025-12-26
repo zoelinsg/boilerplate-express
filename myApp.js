@@ -1,14 +1,22 @@
 require("dotenv").config();
-const bodyParser = require("body-parser");
 
 console.log("Hello World");
 const express = require("express");
+const cors = require("cors");
 const app = express();
 
-// ✅ 解析 HTML form: application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }));
-// ✅ 解析 JSON body（有些測試會用 JSON 送）
-app.use(bodyParser.json());
+// ✅ 1) 允許跨域（freeCodeCamp 測試需要）
+app.use(cors());
+
+// ✅ 2) 跳過 ngrok 的 browser warning（free plan 會擋自動測試）
+app.use((req, res, next) => {
+  res.setHeader("ngrok-skip-browser-warning", "1");
+  next();
+});
+
+// ✅ 解析 body（表單 + JSON）
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
 app.use(function (req, res, next) {
   console.log(req.method + " " + req.path + " - " + req.ip);
@@ -40,17 +48,18 @@ app.get(
   }
 );
 
-// ✅ Challenge 10 (GET /name?first=...&last=...)
+// ✅ Challenge 10
 app.get("/name", function (req, res) {
   const first = req.query.first;
   const last = req.query.last;
   res.json({ name: first + " " + last });
 });
 
-// ✅ Challenge 11 (POST /name, body: first=...&last=...)
+// ✅ Challenge 11
 app.post("/name", function (req, res) {
-  var string = req.body.first + " " + req.body.last;
-  res.json({ name: string });
+  const first = req.body.first;
+  const last = req.body.last;
+  res.json({ name: `${first} ${last}` });
 });
 
 app.get("/:word/echo", function (req, res) {
@@ -58,4 +67,3 @@ app.get("/:word/echo", function (req, res) {
 });
 
 module.exports = app;
-//還沒過
